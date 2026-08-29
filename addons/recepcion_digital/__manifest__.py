@@ -11,7 +11,6 @@
         'security/ir.model.access.csv',
         'data/recepcion_sequence.xml',
         'views/recepcion_arroz_views.xml',
-        'views/stock_lot_views.xml',
         'views/recepcion_menu.xml',
     ],
     'installable': True,
