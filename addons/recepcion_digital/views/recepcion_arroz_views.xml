@@ -80,7 +80,7 @@
         </field>
     </record>
 
-    <!-- Vista Búsqueda -->
+   <!-- Vista Búsqueda -->
     <record id="view_recepcion_arroz_search" model="ir.ui.view">
         <field name="name">recepcion.arroz.search</field>
         <field name="model">recepcion.arroz</field>
@@ -94,7 +94,7 @@
                 <filter string="En Borrador" name="draft" domain="[('state', '=', 'borrador')]"/>
                 <filter string="Completados" name="completed" domain="[('state', '=', 'completado')]"/>
                 <separator/>
-                <group expand="0" string="Agrupar Por">
+                <group string="Agrupar Por">
                     <filter string="Productor" name="group_partner" context="{'group_by': 'partner_id'}"/>
                     <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
                     <filter string="Variedad" name="group_variedad" context="{'group_by': 'variedad_arroz'}"/>
