@@ -1,10 +1,10 @@
 from odoo import http
 from odoo.http import request
-import json
+
 
 class RecepcionController(http.Controller):
 
-    @http.route('/api/recepcion/crear', type='json',
+    @http.route('/api/recepcion/crear', type='jsonrpc',
                 auth='user', methods=['POST'], csrf=False)
     def crear_recepcion(self, **kwargs):
         data = request.jsonrequest
@@ -32,8 +32,8 @@ class RecepcionController(http.Controller):
             'peso_neto': lot.peso_neto,
         }
 
-    @http.route('/api/recepcion/proveedores', type='json',
-                auth='user', methods=['GET'], csrf=False)
+    @http.route('/api/recepcion/proveedores', type='jsonrpc',
+                auth='user', methods=['POST'], csrf=False)
     def listar_proveedores(self, **kwargs):
         proveedores = request.env['res.partner'].sudo().search([
             ('supplier_rank', '>', 0)
