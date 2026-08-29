@@ -103,7 +103,7 @@
                     <filter string="Productor" name="group_partner" context="{'group_by': 'partner_id'}"/>
                     <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
                     <filter string="Variedad" name="group_variedad" context="{'group_by': 'variedad_arroz'}"/>
-                    <filter string="Fecha" name="group_date" context="{'group_by': 'date_recepcion:day'}"/>
+                    <filter string="Fecha" name="group_date" context="{'group_by': 'date_recepcion'}"/>
                 </group>
             </search>
         </field>
