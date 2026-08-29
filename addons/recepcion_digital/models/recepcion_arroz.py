@@ -117,15 +117,21 @@ class RecepcionArroz(models.Model):
     def action_completar(self):
         """
         Orquesta la finalización de la recepción.
-        Valida el peso acondicionado y delega la creación de inventario a su submódulo.
+        Valida el peso acondicionado, delega la creación de inventario (picking/lote)
+        y genera automáticamente la Orden de Compra asociada.
         """
         for record in self:
             if record.peso_acondicionado <= 0:
                 raise UserError('No se puede completar una recepción con peso acondicionado menor o igual a 0 kg.')
 
-            # Delegación al submódulo de inventario
-            record._create_stock_picking_and_lot()
-            
+            # 1. Delegación al submódulo de inventario (retorna el picking generado)
+            picking = record._create_stock_picking_and_lot()
+
+            # 2. Delegación al submódulo de compras (utiliza el producto del movimiento de inventario)
+            if picking and picking.move_ids:
+                product = picking.move_ids[0].product_id
+                record._create_purchase_order(product)
+
             record.state = 'completado'
 
     def action_draft(self):
