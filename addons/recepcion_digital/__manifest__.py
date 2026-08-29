@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Recepción Digital',
-    'version': '17.0.1.0.0',
+    'version': '19.0.1.0.0',
     'summary': 'Digitalización de recepciones de materia prima agroindustrial',
     'description': 'Módulo para arroceras y agroindustrias de Portuguesa, Venezuela.',
     'author': 'Castropy',
