@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menú Raíz del Módulo -->
+    <menuitem id="menu_recepcion_digital_root"
+              name="Recepción Digital"
+              web_icon="recepcion_digital,static/description/icon.png"
+              sequence="10"/>
+
+    <!-- Submenú Operaciones -->
+    <menuitem id="menu_recepcion_operaciones"
+              name="Operaciones"
+              parent="menu_recepcion_digital_root"
+              sequence="10"/>
+
+    <!-- Elemento de Menú: Recepciones de Arroz -->
+    <menuitem id="menu_recepcion_arroz"
+              name="Recepciones de Arroz"
+              parent="menu_recepcion_operaciones"
+              action="action_recepcion_arroz"
+              sequence="10"/>
+</odoo>
