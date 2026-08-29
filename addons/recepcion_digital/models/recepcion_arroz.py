@@ -183,12 +183,13 @@ class RecepcionArroz(models.Model):
             if record.peso_acondicionado <= 0:
                 raise UserError('No se puede completar una recepción con peso acondicionado menor o igual a 0 kg.')
 
-            # 1. Obtener o crear el producto "Arroz Paddy Verde"
+            # 1. Obtener o crear el producto "Arroz Paddy Verde" (Compatible con Odoo 19)
             product = product_obj.search([('name', '=', 'Arroz Paddy Verde')], limit=1)
             if not product:
                 product = product_obj.create({
                     'name': 'Arroz Paddy Verde',
-                    'type': 'product',
+                    'type': 'consu',
+                    'is_storable': True,
                     'tracking': 'lot',
                 })
             elif product.tracking == 'none':
