@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Herencia de la vista formulario de contactos/proveedores -->
+    <record id="view_partner_form_recepcion_inherit" model="ir.ui.view">
+        <field name="name">res.partner.form.recepcion.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            
+            <!-- Insercion del Smart Button en la caja de botones principal -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_recepciones_arroz"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-truck"
+                        invisible="recepcion_count == 0">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="total_peso_acondicionado_kg" widget="float" digits="[16,2]"/> kg
+                        </span>
+                        <span class="o_stat_text">
+                            <field name="recepcion_count"/> Recepciones
+                        </span>
+                    </div>
+                </button>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
