@@ -231,3 +231,28 @@ class RecepcionArroz(models.Model):
             record.descuento_humedad_kg = desc_hum
             record.descuento_impureza_kg = desc_imp
             record.peso_acondicionado = record.peso_neto - (desc_hum + desc_imp)
+
+    # --- RESTRICCIONES DE INTEGRIDAD Y VALIDACIONES ---
+    @api.constrains('porcentaje_humedad', 'porcentaje_impureza', 'porcentaje_grano_rojo')
+    def _check_porcentajes_laboratorio(self):
+        """
+        Valida que los porcentajes ingresados en laboratorio se encuentren en el rango de 0 a 100.
+        """
+        for record in self:
+            if not (0.0 <= record.porcentaje_humedad <= 100.0):
+                raise ValidationError('El porcentaje de humedad debe estar comprendido entre 0% y 100%.')
+            if not (0.0 <= record.porcentaje_impureza <= 100.0):
+                raise ValidationError('El porcentaje de impurezas debe estar comprendido entre 0% y 100%.')
+            if not (0.0 <= record.porcentaje_grano_rojo <= 100.0):
+                raise ValidationError('El porcentaje de grano rojo debe estar comprendido entre 0% y 100%.')
+
+    @api.constrains('peso_bruto', 'peso_tara')
+    def _check_pesos_positivos(self):
+        """
+        Valida que los pesos registrados no sean valores negativos.
+        """
+        for record in self:
+            if record.peso_bruto < 0.0:
+                raise ValidationError('El peso bruto no puede ser un valor negativo.')
+            if record.peso_tara < 0.0:
+                raise ValidationError('El peso tara no puede ser un valor negativo.')
