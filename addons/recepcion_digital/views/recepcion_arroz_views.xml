@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Vista Lista / Tree -->
-    <record id="view_recepcion_arroz_tree" model="ir.ui.view">
-        <field name="name">recepcion.arroz.tree</field>
+    <!-- Vista Lista / List -->
+    <record id="view_recepcion_arroz_list" model="ir.ui.view">
+        <field name="name">recepcion.arroz.list</field>
         <field name="model">recepcion.arroz</field>
         <field name="arch" type="xml">
-            <tree string="Recepciones de Arroz" decoration-info="state == 'borrador'" decoration-warning="state in ('pesaje_inicial', 'laboratorio')" decoration-success="state == 'completado'" decoration-danger="state == 'cancelado'">
+            <list string="Recepciones de Arroz" 
+                  decoration-info="state == 'borrador'" 
+                  decoration-warning="state in ('pesaje_inicial', 'laboratorio')" 
+                  decoration-success="state == 'completado'" 
+                  decoration-danger="state == 'cancelado'">
                 <field name="name"/>
                 <field name="date_recepcion"/>
                 <field name="partner_id"/>
@@ -15,7 +19,7 @@
                 <field name="peso_neto" sum="Total Neto (kg)"/>
                 <field name="peso_acondicionado" sum="Total Acondicionado (kg)"/>
                 <field name="state" widget="badge"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -109,7 +113,7 @@
     <record id="action_recepcion_arroz" model="ir.actions.act_window">
         <field name="name">Recepciones de Arroz</field>
         <field name="res_model">recepcion.arroz</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_recepcion_arroz_search"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
