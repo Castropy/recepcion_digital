@@ -8,8 +8,9 @@
         <field name="arch" type="xml">
             <form string="Recepción de Arroz">
                 <header>
-                    <button name="action_completar" string="Completar Recepción" type="object" class="oe_highlight" invisible="state != 'pesaje_final'"/>
+                    <button name="action_completar" string="Completar Recepción" type="object" class="oe_highlight" invisible="state == 'completado' or state == 'cancelado'"/>
                     <button name="action_draft" string="Volver a Borrador" type="object" invisible="state == 'borrador'"/>
+                    <button name="action_cancelar" string="Cancelar" type="object" invisible="state == 'cancelado'"/>
                     <field name="state" widget="statusbar" statusbar_visible="borrador,pesaje_inicial,laboratorio,pesaje_final,completado"/>
                 </header>
                 <sheet>
@@ -58,21 +59,23 @@
         </field>
     </record>
 
-    <!-- Vista Lista (Tree) -->
+    <!-- Vista Lista (List / Tree) -->
     <record id="view_recepcion_arroz_tree" model="ir.ui.view">
         <field name="name">recepcion.arroz.list</field>
         <field name="model">recepcion.arroz</field>
         <field name="arch" type="xml">
-            <list string="Recepciones de Arroz">
+            <list string="Recepciones de Arroz" decoration-info="state == 'borrador'" decoration-success="state == 'completado'" decoration-danger="state == 'cancelado'">
                 <field name="name"/>
                 <field name="date_recepcion"/>
                 <field name="partner_id"/>
                 <field name="guia_sica"/>
                 <field name="vehiculo_placa"/>
                 <field name="variedad_arroz"/>
-                <field name="peso_neto"/>
-                <field name="peso_acondicionado"/>
-                <field name="state"/>
+                <field name="peso_bruto" sum="Total Peso Bruto"/>
+                <field name="peso_tara" sum="Total Peso Tara"/>
+                <field name="peso_neto" sum="Total Peso Neto"/>
+                <field name="peso_acondicionado" sum="Total Peso Acondicionado"/>
+                <field name="state" widget="badge" decoration-info="state == 'borrador'" decoration-success="state == 'completado'" decoration-danger="state == 'cancelado'"/>
             </list>
         </field>
     </record>
@@ -83,19 +86,19 @@
         <field name="model">recepcion.arroz</field>
         <field name="arch" type="xml">
             <search string="Buscar Recepción">
-                <field name="name"/>
-                <field name="partner_id"/>
-                <field name="guia_sica"/>
-                <field name="vehiculo_placa"/>
-                <field name="chofer_cedula"/>
+                <field name="name" string="Folio / Referencia"/>
+                <field name="partner_id" string="Productor / Proveedor"/>
+                <field name="guia_sica" string="Guía SICA"/>
+                <field name="vehiculo_placa" string="Placa"/>
+                <field name="chofer_cedula" string="Cédula Conductor"/>
                 <filter string="En Borrador" name="draft" domain="[('state', '=', 'borrador')]"/>
                 <filter string="Completados" name="completed" domain="[('state', '=', 'completado')]"/>
                 <separator/>
-                <group>
+                <group expand="0" string="Agrupar Por">
                     <filter string="Productor" name="group_partner" context="{'group_by': 'partner_id'}"/>
                     <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
                     <filter string="Variedad" name="group_variedad" context="{'group_by': 'variedad_arroz'}"/>
-                    <filter string="Fecha" name="group_date" context="{'group_by': 'date_recepcion'}"/>
+                    <filter string="Fecha" name="group_date" context="{'group_by': 'date_recepcion:day'}"/>
                 </group>
             </search>
         </field>
