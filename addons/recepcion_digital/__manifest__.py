@@ -3,10 +3,20 @@
     'name': 'Recepción Digital',
     'version': '19.0.1.0.0',
     'summary': 'Digitalización de recepciones de materia prima agroindustrial',
-    'description': 'Módulo para arroceras y agroindustrias de Portuguesa, Venezuela.',
+    'description': """
+Módulo de Gestión de Recepción Digital de Materia Prima
+=========================================================
+Diseñado para la recepción de arroz paddy, báscula, laboratorio y deducciones 
+en la industria agroindustrial.
+    """,
     'author': 'Castropy',
-    'category': 'Inventory',
-    'depends': ['stock', 'purchase'],
+    'category': 'Supply Chain/Inventory',
+    'depends': [
+        'base',
+        'mail',
+        'stock',
+        'purchase',
+    ],
     'data': [
         'security/ir.model.access.csv',
         'data/recepcion_sequence.xml',
