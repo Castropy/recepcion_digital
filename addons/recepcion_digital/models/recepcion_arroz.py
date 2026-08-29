@@ -13,6 +13,7 @@ class RecepcionArroz(models.Model):
         required=True,
         copy=False,
         readonly=True,
+        index=True,
         default=lambda self: self.env['ir.sequence'].next_by_code('recepcion.arroz') or 'NUEVO',
         help='Secuencia única generada para el ticket de recepción.'
     )
@@ -174,6 +175,16 @@ class RecepcionArroz(models.Model):
             record.state = 'cancelado'
 
     # --- MÉTODOS COMPUTADOS Y REGLAS DE NEGOCIO ---
+    @api.depends('name', 'partner_id', 'guia_sica')
+    def _compute_display_name(self):
+        """
+        Calcula la representación en texto del registro para búsquedas y vistas relacionales.
+        """
+        for record in self:
+            proveedor = record.partner_id.name if record.partner_id else 'Sin Proveedor'
+            guia = f" ({record.guia_sica})" if record.guia_sica else ''
+            record.display_name = f"{record.name} - {proveedor}{guia}"
+
     @api.depends('peso_bruto', 'peso_tara')
     def _compute_peso_neto(self):
         """
