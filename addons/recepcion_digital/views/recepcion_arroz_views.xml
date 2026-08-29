@@ -22,6 +22,12 @@
                                 <span class="o_stat_text">Almacén</span>
                             </div>
                         </button>
+                        <button name="action_view_purchase" type="object" class="oe_stat_button" icon="fa-credit-card" invisible="not purchase_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Orden</span>
+                                <span class="o_stat_text">Compra</span>
+                            </div>
+                        </button>
                     </div>
 
                     <div class="oe_title">
@@ -64,10 +70,11 @@
                         </group>
                     </group>
 
-                    <!-- Nueva sección: Integración con Inventario -->
-                    <group string="Trazabilidad e Inventario" invisible="not picking_id">
+                    <!-- Sección: Integración con Inventario y Compras -->
+                    <group string="Trazabilidad, Inventario y Compras" invisible="not picking_id and not purchase_id">
                         <group>
                             <field name="picking_id" readonly="1"/>
+                            <field name="purchase_id" readonly="1"/>
                         </group>
                         <group>
                             <field name="lot_id" readonly="1"/>
@@ -96,6 +103,7 @@
                 <field name="peso_neto" sum="Total Peso Neto"/>
                 <field name="peso_acondicionado" sum="Total Peso Acondicionado"/>
                 <field name="lot_id" optional="show"/>
+                <field name="purchase_id" optional="hide"/>
                 <field name="state" widget="badge" decoration-info="state == 'borrador'" decoration-success="state == 'completado'" decoration-danger="state == 'cancelado'"/>
             </list>
         </field>
@@ -113,6 +121,7 @@
                 <field name="vehiculo_placa" string="Placa"/>
                 <field name="chofer_cedula" string="Cédula Conductor"/>
                 <field name="lot_id" string="Lote de Almacén"/>
+                <field name="purchase_id" string="Orden de Compra"/>
 
                 <filter string="En Borrador" name="draft" domain="[('state', '=', 'borrador')]"/>
                 <filter string="Completados" name="completed" domain="[('state', '=', 'completado')]"/>
