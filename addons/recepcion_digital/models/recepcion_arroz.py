@@ -151,6 +151,28 @@ class RecepcionArroz(models.Model):
         help='Peso neto final aprovechable comercialmente tras aplicar deducciones técnicas.'
     )
 
+    # --- ACCIONES Y TRANSICIONES DE ESTADO ---
+    def action_completar(self):
+        """
+        Cambia el estado del registro a completado.
+        """
+        for record in self:
+            record.state = 'completado'
+
+    def action_draft(self):
+        """
+        Regresa el registro al estado borrador.
+        """
+        for record in self:
+            record.state = 'borrador'
+
+    def action_cancelar(self):
+        """
+        Cancela la recepción de arroz.
+        """
+        for record in self:
+            record.state = 'cancelado'
+
     # --- MÉTODOS COMPUTADOS Y REGLAS DE NEGOCIO ---
     @api.depends('peso_bruto', 'peso_tara')
     def _compute_peso_neto(self):
