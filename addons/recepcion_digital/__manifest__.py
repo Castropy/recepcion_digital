@@ -12,6 +12,8 @@
         'data/recepcion_sequence.xml',
         'views/recepcion_arroz_views.xml',
         'views/recepcion_menu.xml',
+        'reports/recepcion_arroz_report.xml',
+        'reports/recepcion_arroz_template.xml',
     ],
     'installable': True,
     'application': True,
