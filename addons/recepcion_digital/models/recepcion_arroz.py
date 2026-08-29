@@ -3,11 +3,16 @@ from odoo import models, fields, api
 from odoo.exceptions import ValidationError, UserError
 
 class RecepcionArroz(models.Model):
+    """
+    Modelo principal para la gestión y registro del proceso de recepción de Arroz Paddy.
+    Actúa como orquestador del flujo operativo y consolida la información general.
+    """
     _name = 'recepcion.arroz'
-    _description = 'Registro de Recepcion de Arroz Paddy'
+    _description = 'Registro de Recepción de Arroz Paddy'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'date_recepcion desc, id desc'
 
+    # --- IDENTIFICACIÓN Y ESTADOS ---
     name = fields.Char(
         string='Folio de Recepción',
         required=True,
@@ -108,142 +113,19 @@ class RecepcionArroz(models.Model):
         help='Diferencia calculada entre el Peso Bruto y la Tara.'
     )
 
-    # --- VARIABLES DE LABORATORIO (%) ---
-    porcentaje_humedad = fields.Float(
-        string='Humedad (%)',
-        digits=(5, 2),
-        help='Porcentaje de humedad determinado en la muestra de laboratorio.'
-    )
-
-    porcentaje_impureza = fields.Float(
-        string='Impurezas (%)',
-        digits=(5, 2),
-        help='Porcentaje de materias extrañas y vanos presentes en la muestra.'
-    )
-
-    porcentaje_grano_rojo = fields.Float(
-        string='Grano Rojo (%)',
-        digits=(5, 2),
-        help='Porcentaje de presencia de grano rojo en la muestra analizada.'
-    )
-
-    # --- CÁLCULOS DE LIQUIDACIÓN Y DEDUCCIÓN (kg) ---
-    descuento_humedad_kg = fields.Float(
-        string='Descuento Humedad (kg)',
-        compute='_compute_descuentos_laboratorio',
-        store=True,
-        digits=(16, 2),
-        help='Kilos descontados calculados en función del exceso de humedad sobre la base estándar.'
-    )
-
-    descuento_impureza_kg = fields.Float(
-        string='Descuento Impurezas (kg)',
-        compute='_compute_descuentos_laboratorio',
-        store=True,
-        digits=(16, 2),
-        help='Kilos descontados calculados en función del exceso de materias extrañas.'
-    )
-
-    peso_acondicionado = fields.Float(
-        string='Peso Acondicionado (kg)',
-        compute='_compute_descuentos_laboratorio',
-        store=True,
-        digits=(16, 2),
-        help='Peso neto final aprovechable comercialmente tras aplicar deducciones técnicas.'
-    )
-
-    # --- INTEGRACIÓN CON INVENTARIO ---
-    picking_id = fields.Many2one(
-        comodel_name='stock.picking',
-        string='Albarán de Inventario',
-        readonly=True,
-        copy=False,
-        help='Documento de transferencia de inventario generado automáticamente al completar.'
-    )
-
-    lot_id = fields.Many2one(
-        comodel_name='stock.lot',
-        string='Lote de Almacén',
-        readonly=True,
-        copy=False,
-        help='Número de lote de inventario asociado a esta recepción.'
-    )
-
-    # --- ACCIONES Y TRANSICIONES DE ESTADO ---
+    # --- ACCIONES Y ORQUESTACIÓN DE ESTADOS ---
     def action_completar(self):
         """
-        Cambia el estado a completado y genera la entrada de inventario (stock.picking) 
-        junto con su lote de trazabilidad (stock.lot).
+        Orquesta la finalización de la recepción.
+        Valida el peso acondicionado y delega la creación de inventario a su submódulo.
         """
-        picking_obj = self.env['stock.picking']
-        lot_obj = self.env['stock.lot']
-        product_obj = self.env['product.product']
-
         for record in self:
             if record.peso_acondicionado <= 0:
                 raise UserError('No se puede completar una recepción con peso acondicionado menor o igual a 0 kg.')
 
-            # 1. Obtener o crear el producto "Arroz Paddy Verde"
-            product = product_obj.search([('name', '=', 'Arroz Paddy Verde')], limit=1)
-            if not product:
-                product = product_obj.create({
-                    'name': 'Arroz Paddy Verde',
-                    'type': 'consu',
-                    'is_storable': True,
-                    'tracking': 'lot',
-                })
-            elif product.tracking == 'none':
-                product.write({'tracking': 'lot'})
-
-            # 2. Obtener el tipo de operación de recepción (Entradas)
-            picking_type = self.env['stock.picking.type'].search([
-                ('code', '=', 'incoming'),
-                ('warehouse_id.company_id', '=', record.env.company.id)
-            ], limit=1)
-
-            if not picking_type:
-                raise UserError('No se encontró un tipo de operación de entrada (Incoming) configurado en el inventario.')
-
-            # 3. Crear el Lote de Almacén
-            lot = lot_obj.create({
-                'name': record.name,
-                'product_id': product.id,
-                'company_id': record.env.company.id,
-            })
-            record.lot_id = lot.id
-
-            # 4. Crear la Transferencia de Inventario (stock.picking)
-            location_supplier = record.partner_id.property_stock_supplier or self.env.ref('stock.stock_location_suppliers')
-            location_dest = picking_type.default_location_dest_id
-
-            picking = picking_obj.create({
-                'partner_id': record.partner_id.id,
-                'picking_type_id': picking_type.id,
-                'location_id': location_supplier.id,
-                'location_dest_id': location_dest.id,
-                'origin': record.name,
-                'move_ids': [(0, 0, {
-                    'product_id': product.id,
-                    'product_uom_qty': record.peso_acondicionado,
-                    'product_uom': product.uom_id.id,
-                    'location_id': location_supplier.id,
-                    'location_dest_id': location_dest.id,
-                })],
-            })
-
-            # 5. Confirmar y asignar el lote a la línea de movimiento
-            picking.action_confirm()
-            picking.action_assign()
-
-            for move_line in picking.move_line_ids:
-                move_line.write({
-                    'lot_id': lot.id,
-                    'quantity': record.peso_acondicionado,
-                })
-
-            # 6. Validar la entrada a stock
-            picking.button_validate()
-            record.picking_id = picking.id
+            # Delegación al submódulo de inventario
+            record._create_stock_picking_and_lot()
+            
             record.state = 'completado'
 
     def action_draft(self):
@@ -260,23 +142,7 @@ class RecepcionArroz(models.Model):
         for record in self:
             record.state = 'cancelado'
 
-    def action_view_picking(self):
-        """
-        Abre la vista formulario de la transferencia de inventario vinculada.
-        """
-        self.ensure_one()
-        if not self.picking_id:
-            raise UserError('No hay ninguna entrada de inventario generada para esta recepción.')
-        return {
-            'name': 'Entrada de Inventario',
-            'type': 'ir.actions.act_window',
-            'res_model': 'stock.picking',
-            'res_id': self.picking_id.id,
-            'view_mode': 'form',
-            'target': 'current',
-        }
-
-    # --- MÉTODOS COMPUTADOS Y REGLAS DE NEGOCIO ---
+    # --- MÉTODOS COMPUTADOS BASE ---
     @api.depends('name', 'partner_id', 'guia_sica')
     def _compute_display_name(self):
         """
@@ -301,53 +167,7 @@ class RecepcionArroz(models.Model):
             else:
                 record.peso_neto = 0.0
 
-    @api.depends('peso_neto', 'porcentaje_humedad', 'porcentaje_impureza')
-    def _compute_descuentos_laboratorio(self):
-        """
-        Calcula los kg a descontar por exceso de humedad e impurezas sobre la base estándar
-        (Base Humedad Estándar: 12.0%, Base Impureza Estándar: 1.0%).
-        Determina el peso acondicionado final del lote.
-        """
-        BASE_HUMEDAD = 12.0
-        BASE_IMPUREZA = 1.0
-
-        for record in self:
-            if not record.peso_neto:
-                record.descuento_humedad_kg = 0.0
-                record.descuento_impureza_kg = 0.0
-                record.peso_acondicionado = 0.0
-                continue
-
-            # Cálculo de deducción por exceso de humedad
-            desc_hum = 0.0
-            if record.porcentaje_humedad > BASE_HUMEDAD:
-                exceso_humedad = record.porcentaje_humedad - BASE_HUMEDAD
-                desc_hum = record.peso_neto * (exceso_humedad / 100.0)
-
-            # Cálculo de deducción por exceso de impureza
-            desc_imp = 0.0
-            if record.porcentaje_impureza > BASE_IMPUREZA:
-                exceso_impureza = record.porcentaje_impureza - BASE_IMPUREZA
-                desc_imp = record.peso_neto * (exceso_impureza / 100.0)
-
-            record.descuento_humedad_kg = desc_hum
-            record.descuento_impureza_kg = desc_imp
-            record.peso_acondicionado = record.peso_neto - (desc_hum + desc_imp)
-
-    # --- RESTRICCIONES DE INTEGRIDAD Y VALIDACIONES ---
-    @api.constrains('porcentaje_humedad', 'porcentaje_impureza', 'porcentaje_grano_rojo')
-    def _check_porcentajes_laboratorio(self):
-        """
-        Valida que los porcentajes ingresados en laboratorio se encuentren en el rango de 0 a 100.
-        """
-        for record in self:
-            if not (0.0 <= record.porcentaje_humedad <= 100.0):
-                raise ValidationError('El porcentaje de humedad debe estar comprendido entre 0% y 100%.')
-            if not (0.0 <= record.porcentaje_impureza <= 100.0):
-                raise ValidationError('El porcentaje de impurezas debe estar comprendido entre 0% y 100%.')
-            if not (0.0 <= record.porcentaje_grano_rojo <= 100.0):
-                raise ValidationError('El porcentaje de grano rojo debe estar comprendido entre 0% y 100%.')
-
+    # --- RESTRICCIONES DE INTEGRIDAD BASE ---
     @api.constrains('peso_bruto', 'peso_tara')
     def _check_pesos_positivos(self):
         """
