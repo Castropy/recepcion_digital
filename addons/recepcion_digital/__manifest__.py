@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 {
     'name': 'Recepción Digital',
     'version': '17.0.1.0.0',
@@ -8,6 +9,7 @@
     'depends': ['stock', 'purchase'],
     'data': [
         'security/ir.model.access.csv',
+        'data/recepcion_sequence.xml',
         'views/stock_lot_views.xml',
         'views/recepcion_menu.xml',
     ],
