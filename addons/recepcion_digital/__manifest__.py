@@ -5,13 +5,13 @@
     'description': 'Módulo para arroceras y agroindustrias de Portuguesa, Venezuela.',
     'author': 'Castropy',
     'category': 'Inventory',
-    'depends': ['stock', 'purchase', 'quality_control'],
+    'depends': ['stock', 'purchase'],
     'data': [
         'security/ir.model.access.csv',
         'views/stock_lot_views.xml',
         'views/recepcion_menu.xml',
     ],
     'installable': True,
-    'application': False,
+    'application': True,
     'license': 'LGPL-3',
 }
