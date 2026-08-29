@@ -26,6 +26,33 @@
                 </button>
             </xpath>
 
+            <!-- Insercion de la pestana de Historial Agricola y Calidad -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Historial Agrícola" name="historial_agricola" invisible="recepcion_count == 0">
+                    <group string="Promedios de Calidad Histórica">
+                        <group>
+                            <field name="promedio_humedad" string="Humedad Promedio (%)"/>
+                            <field name="promedio_impureza" string="Impureza Promedio (%)"/>
+                        </group>
+                        <group>
+                            <field name="promedio_grano_rojo" string="Grano Rojo Promedio (%)"/>
+                            <field name="total_peso_acondicionado_kg" string="Total Acondicionado (kg)"/>
+                        </group>
+                    </group>
+                    <field name="recepcion_arroz_ids" readonly="1">
+                        <list default_order="date_recepcion desc">
+                            <field name="name"/>
+                            <field name="date_recepcion"/>
+                            <field name="variedad_arroz"/>
+                            <field name="peso_bruto"/>
+                            <field name="peso_neto"/>
+                            <field name="peso_acondicionado"/>
+                            <field name="state" widget="badge"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+
         </field>
     </record>
 
