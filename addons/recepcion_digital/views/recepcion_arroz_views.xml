@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista Lista / Tree -->
+    <record id="view_recepcion_arroz_tree" model="ir.ui.view">
+        <field name="name">recepcion.arroz.tree</field>
+        <field name="model">recepcion.arroz</field>
+        <field name="arch" type="xml">
+            <tree string="Recepciones de Arroz" decoration-info="state == 'borrador'" decoration-warning="state in ('pesaje_inicial', 'laboratorio')" decoration-success="state == 'completado'" decoration-danger="state == 'cancelado'">
+                <field name="name"/>
+                <field name="date_recepcion"/>
+                <field name="partner_id"/>
+                <field name="guia_sica"/>
+                <field name="vehiculo_placa"/>
+                <field name="variedad_arroz"/>
+                <field name="peso_neto" sum="Total Neto (kg)"/>
+                <field name="peso_acondicionado" sum="Total Acondicionado (kg)"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista Formulario -->
+    <record id="view_recepcion_arroz_form" model="ir.ui.view">
+        <field name="name">recepcion.arroz.form</field>
+        <field name="model">recepcion.arroz</field>
+        <field name="arch" type="xml">
+            <form string="Recepción de Arroz Paddy">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="borrador,pesaje_inicial,laboratorio,pesaje_final,completado"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Datos de Origen y Transporte">
+                            <field name="partner_id"/>
+                            <field name="guia_sica"/>
+                            <field name="variedad_arroz"/>
+                            <field name="date_recepcion"/>
+                        </group>
+                        <group string="Información del Conductor">
+                            <field name="chofer_nombre"/>
+                            <field name="chofer_cedula"/>
+                            <field name="vehiculo_placa"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Pesaje de Báscula" name="pesaje">
+                            <group>
+                                <group string="Registros de Peso (kg)">
+                                    <field name="peso_bruto"/>
+                                    <field name="peso_tara"/>
+                                    <field name="peso_neto" class="oe_subtotal_footer_separator"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Análisis de Laboratorio" name="laboratorio">
+                            <group>
+                                <group string="Parámetros Físicos (%)">
+                                    <field name="porcentaje_humedad"/>
+                                    <field name="porcentaje_impureza"/>
+                                    <field name="porcentaje_grano_rojo"/>
+                                </group>
+                                <group string="Deducciones y Liquidación (kg)">
+                                    <field name="descuento_humedad_kg"/>
+                                    <field name="descuento_impureza_kg"/>
+                                    <field name="peso_acondicionado" class="oe_subtotal_footer_separator"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista Búsqueda y Filtros -->
+    <record id="view_recepcion_arroz_search" model="ir.ui.view">
+        <field name="name">recepcion.arroz.search</field>
+        <field name="model">recepcion.arroz</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Recepción">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="guia_sica"/>
+                <field name="vehiculo_placa"/>
+                <field name="chofer_cedula"/>
+                <filter string="En Borrador" name="draft" domain="[('state', '=', 'borrador')]"/>
+                <filter string="Completados" name="completed" domain="[('state', '=', 'completado')]"/>
+                <group expand="0" string="Agrupar Por">
+                    <filter string="Productor" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Variedad" name="group_variedad" context="{'group_by': 'variedad_arroz'}"/>
+                    <filter string="Fecha" name="group_date" context="{'group_by': 'date_recepcion:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Acción de Ventana -->
+    <record id="action_recepcion_arroz" model="ir.actions.act_window">
+        <field name="name">Recepciones de Arroz</field>
+        <field name="res_model">recepcion.arroz</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_recepcion_arroz_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Cree el primer registro de recepción de arroz paddy.
+            </p>
+        </field>
+    </record>
+</odoo>
