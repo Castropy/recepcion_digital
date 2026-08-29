@@ -80,7 +80,7 @@
         </field>
     </record>
 
-   <!-- Vista Búsqueda -->
+    <!-- Vista Búsqueda -->
     <record id="view_recepcion_arroz_search" model="ir.ui.view">
         <field name="name">recepcion.arroz.search</field>
         <field name="model">recepcion.arroz</field>
@@ -91,15 +91,16 @@
                 <field name="guia_sica" string="Guía SICA"/>
                 <field name="vehiculo_placa" string="Placa"/>
                 <field name="chofer_cedula" string="Cédula Conductor"/>
+
                 <filter string="En Borrador" name="draft" domain="[('state', '=', 'borrador')]"/>
                 <filter string="Completados" name="completed" domain="[('state', '=', 'completado')]"/>
+                
                 <separator/>
-                <group string="Agrupar Por">
-                    <filter string="Productor" name="group_partner" context="{'group_by': 'partner_id'}"/>
-                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
-                    <filter string="Variedad" name="group_variedad" context="{'group_by': 'variedad_arroz'}"/>
-                    <filter string="Fecha" name="group_date" context="{'group_by': 'date_recepcion:day'}"/>
-                </group>
+                
+                <filter string="Productor" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                <filter string="Variedad" name="group_variedad" context="{'group_by': 'variedad_arroz'}"/>
+                <filter string="Fecha" name="group_date" context="{'group_by': 'date_recepcion:day'}"/>
             </search>
         </field>
     </record>
