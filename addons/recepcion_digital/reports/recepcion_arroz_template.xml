@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Documento Principal de la Recepción -->
+    <template id="report_recepcion_arroz_document">
+        <t t-call="web.external_layout">
+            <t t-foreach="docs" t-as="doc">
+                <div class="page" style="font-family: Arial, sans-serif; font-size: 12px; color: #333;">
+                    
+                    <!-- Encabezado del Comprobante -->
+                    <div class="row mb-4">
+                        <div class="col-8">
+                            <h2 style="font-weight: bold; margin-bottom: 2px;">COMPROBANTE DE RECEPCIÓN DE ARROZ</h2>
+                            <span style="font-size: 14px; color: #555;">Materia Prima Paddy Verde</span>
+                        </div>
+                        <div class="col-4 text-end">
+                            <h3 style="color: #000; font-weight: bold; margin-bottom: 0;" t-field="doc.name"/>
+                            <span class="badge bg-secondary" t-field="doc.state"/>
+                        </div>
+                    </div>
+
+                    <hr style="border-top: 2px solid #000; margin-top: 5px; margin-bottom: 15px;"/>
+
+                    <!-- Información General y Transporte -->
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <table class="table table-sm table-borderless" style="width: 100%;">
+                                <tr>
+                                    <td style="font-weight: bold; width: 40%;">Productor / Proveedor:</td>
+                                    <td><span t-field="doc.partner_id.name"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold;">Guía SICA / INSAI:</td>
+                                    <td><span t-field="doc.guia_sica"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold;">Fecha de Entrada:</td>
+                                    <td><span t-field="doc.date_recepcion" t-options='{"widget": "datetime"}'/></td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold;">Variedad de Arroz:</td>
+                                    <td><span t-field="doc.variedad_arroz"/></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-6">
+                            <table class="table table-sm table-borderless" style="width: 100%;">
+                                <tr>
+                                    <td style="font-weight: bold; width: 40%;">Conductor:</td>
+                                    <td><span t-field="doc.chofer_nombre"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold;">Cédula Conductor:</td>
+                                    <td><span t-field="doc.chofer_cedula"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold;">Placa Vehículo:</td>
+                                    <td><span t-field="doc.vehiculo_placa"/></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Bloques de Pesaje y Laboratorio -->
+                    <div class="row mb-3">
+                        <!-- Pesos de Báscula -->
+                        <div class="col-6">
+                            <div style="border: 1px solid #ccc; border-radius: 4px; padding: 10px;">
+                                <h5 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 8px;">
+                                    PESAJE DE BÁSCULA (KG)
+                                </h5>
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tr>
+                                        <td>Peso Bruto:</td>
+                                        <td class="text-end" style="font-weight: bold;"><span t-field="doc.peso_bruto"/> kg</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Peso Tara:</td>
+                                        <td class="text-end" style="font-weight: bold;"><span t-field="doc.peso_tara"/> kg</td>
+                                    </tr>
+                                    <tr style="border-top: 1px solid #eee;">
+                                        <td style="font-weight: bold; color: #000;">Peso Neto:</td>
+                                        <td class="text-end" style="font-weight: bold; color: #000; font-size: 13px;">
+                                            <span t-field="doc.peso_neto"/> kg
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Análisis de Laboratorio -->
+                        <div class="col-6">
+                            <div style="border: 1px solid #ccc; border-radius: 4px; padding: 10px;">
+                                <h5 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 8px;">
+                                    ANÁLISIS DE LABORATORIO (%)
+                                </h5>
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tr>
+                                        <td>Humedad:</td>
+                                        <td class="text-end" style="font-weight: bold;"><span t-field="doc.porcentaje_humedad"/> %</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Impurezas:</td>
+                                        <td class="text-end" style="font-weight: bold;"><span t-field="doc.porcentaje_impureza"/> %</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Grano Rojo:</td>
+                                        <td class="text-end" style="font-weight: bold;"><span t-field="doc.porcentaje_grano_rojo"/> %</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Liquidación y Deducciones -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div style="border: 1px solid #ccc; border-radius: 4px; padding: 10px; background-color: #f9f9f9;">
+                                <h5 style="font-size: 13px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 8px;">
+                                    LIQUIDACIÓN TÉCNICA Y DEDUCCIONES
+                                </h5>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <span>Desc. Humedad: </span>
+                                        <strong><span t-field="doc.descuento_humedad_kg"/> kg</strong>
+                                    </div>
+                                    <div class="col-4">
+                                        <span>Desc. Impurezas: </span>
+                                        <strong><span t-field="doc.descuento_impureza_kg"/> kg</strong>
+                                    </div>
+                                    <div class="col-4 text-end">
+                                        <span style="font-size: 13px; font-weight: bold;">Peso Acondicionado: </span>
+                                        <span style="font-size: 14px; font-weight: bold; color: #0b5ed7;" t-field="doc.peso_acondicionado"/> <strong>kg</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Firmas -->
+                    <div class="row mt-5 pt-4 text-center">
+                        <div class="col-6">
+                            <div style="border-top: 1px solid #000; width: 70%; margin: 0 auto; padding-top: 5px;">
+                                <strong>Operador de Báscula</strong><br/>
+                                <span style="font-size: 10px; color: #666;">Firma y Sello</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div style="border-top: 1px solid #000; width: 70%; margin: 0 auto; padding-top: 5px;">
+                                <strong>Conductor / Entregado por</strong><br/>
+                                <span style="font-size: 10px; color: #666;">Firma de Conformidad</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>
