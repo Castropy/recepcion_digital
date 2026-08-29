@@ -14,6 +14,16 @@
                     <field name="state" widget="statusbar" statusbar_visible="borrador,pesaje_inicial,laboratorio,pesaje_final,completado"/>
                 </header>
                 <sheet>
+                    <!-- Smart Buttons Box -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_picking" type="object" class="oe_stat_button" icon="fa-truck" invisible="not picking_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Entrada</span>
+                                <span class="o_stat_text">Almacén</span>
+                            </div>
+                        </button>
+                    </div>
+
                     <div class="oe_title">
                         <h1>
                             <field name="name" readonly="1"/>
@@ -53,6 +63,16 @@
                             <field name="peso_acondicionado" readonly="1"/>
                         </group>
                     </group>
+
+                    <!-- Nueva sección: Integración con Inventario -->
+                    <group string="Trazabilidad e Inventario" invisible="not picking_id">
+                        <group>
+                            <field name="picking_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="lot_id" readonly="1"/>
+                        </group>
+                    </group>
                 </sheet>
                 <chatter/>
             </form>
@@ -75,6 +95,7 @@
                 <field name="peso_tara" sum="Total Peso Tara"/>
                 <field name="peso_neto" sum="Total Peso Neto"/>
                 <field name="peso_acondicionado" sum="Total Peso Acondicionado"/>
+                <field name="lot_id" optional="show"/>
                 <field name="state" widget="badge" decoration-info="state == 'borrador'" decoration-success="state == 'completado'" decoration-danger="state == 'cancelado'"/>
             </list>
         </field>
@@ -91,6 +112,7 @@
                 <field name="guia_sica" string="Guía SICA"/>
                 <field name="vehiculo_placa" string="Placa"/>
                 <field name="chofer_cedula" string="Cédula Conductor"/>
+                <field name="lot_id" string="Lote de Almacén"/>
 
                 <filter string="En Borrador" name="draft" domain="[('state', '=', 'borrador')]"/>
                 <filter string="Completados" name="completed" domain="[('state', '=', 'completado')]"/>
