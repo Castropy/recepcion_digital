@@ -8,9 +8,9 @@
         <field name="arch" type="xml">
             <form string="Recepción de Arroz">
                 <header>
-                    <button name="action_completar" string="Completar" type="object" class="oe_highlight" invisible="state != 'borrador'"/>
+                    <button name="action_completar" string="Completar Recepción" type="object" class="oe_highlight" invisible="state != 'pesaje_final'"/>
                     <button name="action_draft" string="Volver a Borrador" type="object" invisible="state == 'borrador'"/>
-                    <field name="state" widget="statusbar" statusbar_visible="borrador,completado"/>
+                    <field name="state" widget="statusbar" statusbar_visible="borrador,pesaje_inicial,laboratorio,pesaje_final,completado"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -19,37 +19,46 @@
                         </h1>
                     </div>
                     <group>
-                        <group string="Datos del Proveedor / Guía">
+                        <group string="Origen y Trazabilidad">
                             <field name="partner_id"/>
                             <field name="guia_sica"/>
                             <field name="date_recepcion"/>
+                            <field name="variedad_arroz"/>
                         </group>
                         <group string="Datos del Transporte">
                             <field name="vehiculo_placa"/>
                             <field name="chofer_cedula"/>
-                            <field name="nombre_chofer"/>
+                            <field name="chofer_nombre"/>
                         </group>
                     </group>
-                    <group string="Control de Pesos y Calidad">
-                        <group>
-                            <field name="variedad_arroz"/>
+                    <group>
+                        <group string="Pesaje de Báscula (kg)">
                             <field name="peso_bruto"/>
-                            <field name="tara_camion"/>
+                            <field name="peso_tara"/>
                             <field name="peso_neto" readonly="1"/>
                         </group>
+                        <group string="Análisis de Laboratorio (%)">
+                            <field name="porcentaje_humedad"/>
+                            <field name="porcentaje_impureza"/>
+                            <field name="porcentaje_grano_rojo"/>
+                        </group>
+                    </group>
+                    <group string="Liquidación y Deducciones">
                         <group>
-                            <field name="humedad"/>
-                            <field name="impurezas"/>
+                            <field name="descuento_humedad_kg" readonly="1"/>
+                            <field name="descuento_impureza_kg" readonly="1"/>
+                        </group>
+                        <group>
                             <field name="peso_acondicionado" readonly="1"/>
-                            <field name="silo_asignado"/>
                         </group>
                     </group>
                 </sheet>
+                <chatter/>
             </form>
         </field>
     </record>
 
-    <!-- Vista List / Tree -->
+    <!-- Vista Lista (Tree) -->
     <record id="view_recepcion_arroz_tree" model="ir.ui.view">
         <field name="name">recepcion.arroz.list</field>
         <field name="model">recepcion.arroz</field>
@@ -98,11 +107,6 @@
         <field name="res_model">recepcion.arroz</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_recepcion_arroz_search"/>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Cree el primer registro de recepción de arroz paddy.
-            </p>
-        </field>
     </record>
 
     <!-- Menús -->
