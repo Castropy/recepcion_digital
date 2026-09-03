@@ -113,6 +113,23 @@ class RecepcionArroz(models.Model):
         help='Diferencia calculada entre el Peso Bruto y la Tara.'
     )
 
+    # --- MÉTODOS ORM (CREACIÓN Y GESTIÓN) ---
+    @api.model_create_multi
+    def create(self, vals_list):
+        """
+        Sobrescribe el método create para permitir la creación automática 
+        de un nuevo proveedor en res.partner si se ingresa texto libre en partner_id.
+        """
+        for vals in vals_list:
+            partner_val = vals.get('partner_id')
+            if partner_val and isinstance(partner_val, str):
+                partner = self.env['res.partner'].create({
+                    'name': partner_val,
+                    'is_company': True,
+                })
+                vals['partner_id'] = partner.id
+        return super(RecepcionArroz, self).create(vals_list)
+
     # --- ACCIONES Y ORQUESTACIÓN DE ESTADOS ---
     def action_completar(self):
         """

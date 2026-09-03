@@ -33,7 +33,7 @@ class RecepcionArrozPurchase(models.Model):
                 'product_id': product.id,
                 'name': f'Arroz Paddy Acondicionado - Folio {self.name}',
                 'product_qty': self.peso_acondicionado,
-                'product_uom': product.uom_id.id,
+                'product_uom_id': product.uom_id.id,
                 'price_unit': 0.0,
                 'date_planned': fields.Datetime.now(),
             })],
