@@ -25,6 +25,7 @@ en la industria agroindustrial.
         'views/recepcion_arroz_views.xml',
         'views/recepcion_menu.xml',
         'views/res_partner_views.xml',
+        'views/res_users_views.xml',
         'reports/recepcion_arroz_report.xml',
         'reports/recepcion_arroz_template.xml',
     ],
