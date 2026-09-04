@@ -78,7 +78,7 @@ class ResPartner(models.Model):
 
     def action_view_recepciones_arroz(self):
         """
-        Retorna una accion de ventana para desplegar la lista filtrada de recepciones del proveedor.
+        Retorna una acción de ventana para desplegar la lista filtrada de recepciones del proveedor.
         """
         self.ensure_one()
         action = self.env["ir.actions.actions"]._for_xml_id("recepcion_digital.action_recepcion_arroz")
