@@ -85,7 +85,7 @@ class RecepcionArrozLab(models.Model):
 
             record.descuento_humedad_kg = desc_hum
             record.descuento_impureza_kg = desc_imp
-            record.peso_acondicionado = record.peso_neto - (desc_hum + desc_imp)
+            record.peso_acondicionado = max(0.0, record.peso_neto - (desc_hum + desc_imp))
 
     # --- RESTRICCIONES DE INTEGRIDAD Y VALIDACIONES ---
     @api.constrains('porcentaje_humedad', 'porcentaje_impureza', 'porcentaje_grano_rojo')
