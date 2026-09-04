@@ -120,34 +120,42 @@ class RecepcionArroz(models.Model):
         Sobrescribe el método create para permitir la creación automática 
         de un nuevo proveedor en res.partner si se ingresa texto libre en partner_id.
         """
+        new_vals_list = []
         for vals in vals_list:
-            partner_val = vals.get('partner_id')
+            vals_dict = dict(vals)
+            partner_val = vals_dict.get('partner_id')
             if partner_val and isinstance(partner_val, str):
                 partner = self.env['res.partner'].create({
                     'name': partner_val,
                     'is_company': True,
                 })
-                vals['partner_id'] = partner.id
-        return super(RecepcionArroz, self).create(vals_list)
+                vals_dict['partner_id'] = partner.id
+            new_vals_list.append(vals_dict)
+        return super(RecepcionArroz, self).create(new_vals_list)
 
     # --- ACCIONES Y ORQUESTACIÓN DE ESTADOS ---
     def action_completar(self):
         """
         Orquesta la finalización de la recepción.
-        Valida el peso acondicionado, delega la creación de inventario (picking/lote)
+        Valida el peso, delega la creación de inventario (picking/lote)
         y genera automáticamente la Orden de Compra asociada.
         """
         for record in self:
-            if record.peso_acondicionado <= 0:
-                raise UserError('No se puede completar una recepción con peso acondicionado menor o igual a 0 kg.')
+            # Obtener peso a validar (peso_acondicionado si existe por herencia, o peso_neto)
+            peso_final = getattr(record, 'peso_acondicionado', False) or record.peso_neto
+            if peso_final <= 0:
+                raise UserError('No se puede completar una recepción con peso menor o igual a 0 kg.')
 
-            # 1. Delegación al submódulo de inventario (retorna el picking generado)
-            picking = record._create_stock_picking_and_lot()
+            # 1. Delegación al submódulo de inventario (si está implementado)
+            picking = False
+            if hasattr(record, '_create_stock_picking_and_lot'):
+                picking = record._create_stock_picking_and_lot()
 
             # 2. Delegación al submódulo de compras (utiliza el producto del movimiento de inventario)
-            if picking and picking.move_ids:
+            if picking and getattr(picking, 'move_ids', False):
                 product = picking.move_ids[0].product_id
-                record._create_purchase_order(product)
+                if hasattr(record, '_create_purchase_order'):
+                    record._create_purchase_order(product)
 
             record.state = 'completado'
 
