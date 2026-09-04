@@ -8,9 +8,9 @@
         <field name="arch" type="xml">
             <xpath expr="//notebook/page[@name='access_rights']" position="inside">
                 <group string="Recepción Digital">
-                    <field name="group_ids" 
-                           widget="many2many_checkboxes" 
-                           domain="[('category_id.name', '=', 'Recepción Digital')]" 
+                    <field name="group_ids"
+                           widget="many2many_checkboxes"
+                           domain="[('name', 'like', 'Recepción Digital')]"
                            nolabel="1"/>
                 </group>
             </xpath>
