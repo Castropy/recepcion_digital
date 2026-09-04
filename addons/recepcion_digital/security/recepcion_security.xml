@@ -2,33 +2,23 @@
 <odoo>
     <data noupdate="0">
 
-        <!-- Categoria para la gestión de permisos en la configuracion de usuarios -->
-        <record id="module_category_recepcion_digital" model="ir.module.category">
-            <field name="name">Recepción Digital</field>
-            <field name="description">Gestión de acceso y roles para Romana, Laboratorio y Administración.</field>
-            <field name="sequence">20</field>
-        </record>
-
         <!-- Grupo: Operador de Romana -->
         <record id="group_recepcion_romana" model="res.groups">
-            <field name="name">Operador de Romana</field>
-            <field name="category_id" ref="module_category_recepcion_digital"/>
+            <field name="name">Recepción Digital / Operador de Romana</field>
             <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
             <field name="comment">Acceso para registrar datos del vehículo, conductor y pesaje de báscula.</field>
         </record>
 
         <!-- Grupo: Analista de Laboratorio -->
         <record id="group_recepcion_laboratorio" model="res.groups">
-            <field name="name">Analista de Laboratorio</field>
-            <field name="category_id" ref="module_category_recepcion_digital"/>
+            <field name="name">Recepción Digital / Analista de Laboratorio</field>
             <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
             <field name="comment">Acceso para ingresar análisis de calidad, humedad e impurezas.</field>
         </record>
 
         <!-- Grupo: Administrador / Gerente -->
         <record id="group_recepcion_manager" model="res.groups">
-            <field name="name">Administrador / Gerente</field>
-            <field name="category_id" ref="module_category_recepcion_digital"/>
+            <field name="name">Recepción Digital / Administrador / Gerente</field>
             <field name="implied_ids" eval="[(4, ref('group_recepcion_romana')), (4, ref('group_recepcion_laboratorio'))]"/>
             <field name="comment">Acceso completo para validación, completado y liquidación de recepciones.</field>
         </record>
