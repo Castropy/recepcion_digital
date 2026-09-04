@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
     <!-- Menú Raíz del Módulo -->
     <menuitem id="menu_recepcion_digital_root"
               name="Recepción Digital"
@@ -18,4 +19,5 @@
               parent="menu_recepcion_operaciones"
               action="action_recepcion_arroz"
               sequence="10"/>
+
 </odoo>
