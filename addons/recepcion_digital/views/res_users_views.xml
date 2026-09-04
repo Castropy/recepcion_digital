@@ -7,9 +7,14 @@
         <field name="arch" type="xml">
             <xpath expr="//notebook/page[@name='access_rights']" position="inside">
                 <group string="RECEPCIÓN DIGITAL">
-                    <field name="has_group('recepcion_digital.group_recepcion_romana')" string="Operador de Romana"/>
-                    <field name="has_group('recepcion_digital.group_recepcion_laboratorio')" string="Analista de Laboratorio"/>
-                    <field name="has_group('recepcion_digital.group_recepcion_manager')" string="Administrador / Gerente"/>
+                    <field name="group_ids" 
+                           widget="many2many_checkboxes" 
+                           domain="[('name', 'in', [
+                               'Recepción Digital / Operador de Romana',
+                               'Recepción Digital / Analista de Laboratorio',
+                               'Recepción Digital / Administrador / Gerente'
+                           ])]" 
+                           nolabel="1"/>
                 </group>
             </xpath>
         </field>
