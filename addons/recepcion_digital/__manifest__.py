@@ -16,8 +16,10 @@ en la industria agroindustrial.
         'mail',
         'stock',
         'purchase',
+        'hr',
     ],
     'data': [
+        'security/recepcion_security.xml',
         'security/ir.model.access.csv',
         'data/recepcion_sequence.xml',
         'views/recepcion_arroz_views.xml',
