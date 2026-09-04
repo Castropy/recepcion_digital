@@ -7,8 +7,13 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
+
+            <!-- Campo técnico invisible para evaluación de condiciones UI -->
+            <xpath expr="//sheet" position="inside">
+                <field name="recepcion_count" invisible="1"/>
+            </xpath>
             
-            <!-- Insercion del Smart Button en la caja de botones principal -->
+            <!-- Inserción del Smart Button en la caja de botones principal -->
             <xpath expr="//div[@name='button_box']" position="inside">
                 <button name="action_view_recepciones_arroz"
                         type="object"
@@ -17,7 +22,7 @@
                         invisible="recepcion_count == 0">
                     <div class="o_field_widget o_stat_info">
                         <span class="o_stat_value">
-                            <field name="total_peso_acondicionado_kg" widget="float" digits="[16,2]"/> kg
+                            <field name="total_peso_acondicionado_kg" widget="float"/> kg
                         </span>
                         <span class="o_stat_text">
                             <field name="recepcion_count"/> Recepciones
@@ -26,17 +31,17 @@
                 </button>
             </xpath>
 
-            <!-- Insercion de la pestana de Historial Agricola y Calidad -->
+            <!-- Inserción de la pestaña de Historial Agrícola y Calidad -->
             <xpath expr="//notebook" position="inside">
-                <page string="Historial Agrícola" name="historial_agricola" invisible="recepcion_count == 0">
+                <page string="Historial Agrícola" name="historial_agricola">
                     <group string="Promedios de Calidad Histórica">
                         <group>
-                            <field name="promedio_humedad" string="Humedad Promedio (%)"/>
-                            <field name="promedio_impureza" string="Impureza Promedio (%)"/>
+                            <field name="promedio_humedad" readonly="1"/>
+                            <field name="promedio_impureza" readonly="1"/>
                         </group>
                         <group>
-                            <field name="promedio_grano_rojo" string="Grano Rojo Promedio (%)"/>
-                            <field name="total_peso_acondicionado_kg" string="Total Acondicionado (kg)"/>
+                            <field name="promedio_grano_rojo" readonly="1"/>
+                            <field name="total_peso_acondicionado_kg" readonly="1"/>
                         </group>
                     </group>
                     <field name="recepcion_arroz_ids" readonly="1">
