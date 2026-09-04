@@ -42,7 +42,6 @@ class RecepcionArrozStock(models.Model):
             product = product_obj.create({
                 'name': 'Arroz Paddy Verde',
                 'type': 'consu',
-                'is_storable': True,
                 'tracking': 'lot',
             })
         elif product.tracking == 'none':
@@ -69,6 +68,8 @@ class RecepcionArrozStock(models.Model):
         location_supplier = self.partner_id.property_stock_supplier or self.env.ref('stock.stock_location_suppliers')
         location_dest = picking_type.default_location_dest_id
 
+        peso_final = getattr(self, 'peso_acondicionado', False) or self.peso_neto
+
         picking = picking_obj.create({
             'partner_id': self.partner_id.id,
             'picking_type_id': picking_type.id,
@@ -76,8 +77,9 @@ class RecepcionArrozStock(models.Model):
             'location_dest_id': location_dest.id,
             'origin': self.name,
             'move_ids': [(0, 0, {
+                'name': f'Recepción {self.name}',
                 'product_id': product.id,
-                'product_uom_qty': self.peso_acondicionado,
+                'product_uom_qty': peso_final,
                 'product_uom': product.uom_id.id,
                 'location_id': location_supplier.id,
                 'location_dest_id': location_dest.id,
@@ -88,11 +90,26 @@ class RecepcionArrozStock(models.Model):
         picking.action_confirm()
         picking.action_assign()
 
-        for move_line in picking.move_line_ids:
-            move_line.write({
-                'lot_id': lot.id,
-                'quantity': self.peso_acondicionado,
-            })
+        if picking.move_line_ids:
+            for move_line in picking.move_line_ids:
+                move_line.write({
+                    'lot_id': lot.id,
+                    'quantity': peso_final,
+                })
+        else:
+            # Si no se crearon move lines automáticamente al asignar, crear una explícitamente
+            move = picking.move_ids[0] if picking.move_ids else False
+            if move:
+                self.env['stock.move.line'].create({
+                    'move_id': move.id,
+                    'picking_id': picking.id,
+                    'product_id': product.id,
+                    'product_uom_id': product.uom_id.id,
+                    'location_id': location_supplier.id,
+                    'location_dest_id': location_dest.id,
+                    'lot_id': lot.id,
+                    'quantity': peso_final,
+                })
 
         # 6. Validar la entrada a stock
         picking.button_validate()
