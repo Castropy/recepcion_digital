@@ -8,7 +8,7 @@
         <field name="arch" type="xml">
             <form string="Recepción de Arroz">
                 <header>
-                    <button name="action_completar" string="Completar Recepción" type="object" class="oe_highlight" invisible="state == 'completado' or state == 'cancelado'"/>
+                    <button name="action_completar" string="Completar Recepción" type="object" class="oe_highlight" invisible="state in ['completado', 'cancelado']"/>
                     <button name="action_draft" string="Volver a Borrador" type="object" invisible="state == 'borrador'"/>
                     <button name="action_cancelar" string="Cancelar" type="object" invisible="state == 'cancelado'"/>
                     <field name="state" widget="statusbar" statusbar_visible="borrador,pesaje_inicial,laboratorio,pesaje_final,completado"/>
@@ -22,7 +22,7 @@
                                 <span class="o_stat_text">Almacén</span>
                             </div>
                         </button>
-                        <button name="action_view_purchase" type="object" class="oe_stat_button" icon="fa-credit-card" invisible="not purchase_id">
+                        <button name="action_view_purchase" type="object" class="oe_stat_button" icon="fa-shopping-cart" invisible="not purchase_id">
                             <div class="o_stat_info">
                                 <span class="o_stat_text">Orden</span>
                                 <span class="o_stat_text">Compra</span>
@@ -37,27 +37,27 @@
                     </div>
                     <group>
                         <group string="Origen y Trazabilidad">
-                            <field name="partner_id"/>
-                            <field name="guia_sica"/>
-                            <field name="date_recepcion"/>
-                            <field name="variedad_arroz"/>
+                            <field name="partner_id" readonly="state in ['completado', 'cancelado']"/>
+                            <field name="guia_sica" readonly="state in ['completado', 'cancelado']"/>
+                            <field name="date_recepcion" readonly="state in ['completado', 'cancelado']"/>
+                            <field name="variedad_arroz" readonly="state in ['completado', 'cancelado']"/>
                         </group>
                         <group string="Datos del Transporte">
-                            <field name="vehiculo_placa"/>
-                            <field name="chofer_cedula"/>
-                            <field name="chofer_nombre"/>
+                            <field name="vehiculo_placa" readonly="state in ['completado', 'cancelado']"/>
+                            <field name="chofer_cedula" readonly="state in ['completado', 'cancelado']"/>
+                            <field name="chofer_nombre" readonly="state in ['completado', 'cancelado']"/>
                         </group>
                     </group>
                     <group>
                         <group string="Pesaje de Báscula (kg)">
-                            <field name="peso_bruto"/>
-                            <field name="peso_tara"/>
+                            <field name="peso_bruto" readonly="state in ['completado', 'cancelado']"/>
+                            <field name="peso_tara" readonly="state in ['completado', 'cancelado']"/>
                             <field name="peso_neto" readonly="1"/>
                         </group>
                         <group string="Análisis de Laboratorio (%)">
-                            <field name="porcentaje_humedad"/>
-                            <field name="porcentaje_impureza"/>
-                            <field name="porcentaje_grano_rojo"/>
+                            <field name="porcentaje_humedad" readonly="state in ['completado', 'cancelado']"/>
+                            <field name="porcentaje_impureza" readonly="state in ['completado', 'cancelado']"/>
+                            <field name="porcentaje_grano_rojo" readonly="state in ['completado', 'cancelado']"/>
                         </group>
                     </group>
                     <group string="Liquidación y Deducciones">
@@ -104,7 +104,7 @@
                 <field name="peso_acondicionado" sum="Total Peso Acondicionado"/>
                 <field name="lot_id" optional="show"/>
                 <field name="purchase_id" optional="hide"/>
-                <field name="state" widget="badge" decoration-info="state == 'borrador'" decoration-success="state == 'completado'" decoration-danger="state == 'cancelado'"/>
+                <field name="state" widget="badge" decoration-info="state == 'borrador'" decoration-warning="state in ['pesaje_inicial', 'laboratorio', 'pesaje_final']" decoration-success="state == 'completado'" decoration-danger="state == 'cancelado'"/>
             </list>
         </field>
     </record>
