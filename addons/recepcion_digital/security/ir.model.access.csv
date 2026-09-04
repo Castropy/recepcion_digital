@@ -1,4 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_recepcion_arroz_romana,recepcion.arroz.romana,model_recepcion_arroz,group_recepcion_romana,1,1,1,0
-access_recepcion_arroz_laboratorio,recepcion.arroz.laboratorio,model_recepcion_arroz,group_recepcion_laboratorio,1,1,0,0
-access_recepcion_arroz_manager,recepcion.arroz.manager,model_recepcion_arroz,group_recepcion_manager,1,1,1,1
+access_recepcion_arroz_romana,recepcion.arroz.romana,model_recepcion_arroz,recepcion_digital.group_recepcion_romana,1,1,1,0
+access_recepcion_arroz_laboratorio,recepcion.arroz.laboratorio,model_recepcion_arroz,recepcion_digital.group_recepcion_laboratorio,1,1,0,0
+access_recepcion_arroz_admin,recepcion.arroz.admin,model_recepcion_arroz,recepcion_digital.group_recepcion_admin,1,1,1,1
