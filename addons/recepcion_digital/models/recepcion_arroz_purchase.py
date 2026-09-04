@@ -25,6 +25,7 @@ class RecepcionArrozPurchase(models.Model):
         """
         self.ensure_one()
         purchase_obj = self.env['purchase.order']
+        peso_final = getattr(self, 'peso_acondicionado', False) or self.peso_neto
 
         purchase = purchase_obj.create({
             'partner_id': self.partner_id.id,
@@ -32,8 +33,8 @@ class RecepcionArrozPurchase(models.Model):
             'order_line': [(0, 0, {
                 'product_id': product.id,
                 'name': f'Arroz Paddy Acondicionado - Folio {self.name}',
-                'product_qty': self.peso_acondicionado,
-                'product_uom_id': product.uom_id.id,
+                'product_qty': peso_final,
+                'product_uom': product.uom_id.id,
                 'price_unit': 0.0,
                 'date_planned': fields.Datetime.now(),
             })],
