@@ -23,7 +23,6 @@ en la industria agroindustrial.
         'security/ir.model.access.csv',
         'data/recepcion_sequence.xml',
         'views/recepcion_arroz_views.xml',
-        'views/recepcion_menu.xml',
         'views/res_partner_views.xml',
         'views/res_users_views.xml',
         'reports/recepcion_arroz_report.xml',
