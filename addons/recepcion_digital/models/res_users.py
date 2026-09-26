@@ -22,7 +22,7 @@ class ResUsers(models.Model):
         Retorna el perfil del usuario autenticado, su área y sus roles asignados.
         """
         self.ensure_one()
-        
+
         # Identificar el rol principal según los grupos de seguridad
         role = 'user'
         if self.has_group('recepcion_digital.group_recepcion_manager'):
@@ -32,12 +32,17 @@ class ResUsers(models.Model):
         elif self.has_group('recepcion_digital.group_recepcion_romana'):
             role = 'romana'
 
+        # Resguardo en caso de que hr (employee_id) no esté instalado o asignado
+        employee = getattr(self, 'employee_id', False)
+        employee_id = employee.id if employee else False
+        employee_name = employee.name if employee else self.name
+
         return {
             'user_id': self.id,
             'name': self.name,
             'login': self.login,
-            'employee_id': self.employee_id.id or False,
-            'employee_name': self.employee_id.name or self.name,
+            'employee_id': employee_id,
+            'employee_name': employee_name,
             'area_trabajo': self.area_trabajo or 'romana',
             'role': role,
             'groups': [group.xml_id for group in self.groups_id if group.xml_id],
