@@ -1,36 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="0">
+    <data noupdate="1">
 
-        <!-- Categoría Principal del Módulo -->
+        <!-- Categoría del Módulo -->
         <record id="module_category_recepcion_digital" model="ir.module.category">
             <field name="name">Recepción Digital</field>
-            <field name="description">Gestión de roles y áreas para personal operativo de recepción</field>
-            <field name="sequence">15</field>
+            <field name="description">Gestión de recepción de materia prima, pesajes e inspecciones de calidad.</field>
+            <field name="sequence">10</field>
         </record>
 
         <!-- Grupo: Operador de Romana -->
         <record id="group_recepcion_romana" model="res.groups">
             <field name="name">Operador de Romana</field>
-            <field name="category_id" ref="module_category_recepcion_digital"/>
             <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
             <field name="comment">Acceso para registrar datos del vehículo, conductor y pesaje de báscula.</field>
         </record>
 
-        <!-- Grupo: Analista de Laboratorio -->
+        <!-- Grupo: Inspector de Laboratorio -->
         <record id="group_recepcion_laboratorio" model="res.groups">
-            <field name="name">Analista de Laboratorio</field>
-            <field name="category_id" ref="module_category_recepcion_digital"/>
+            <field name="name">Inspector de Laboratorio</field>
             <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
-            <field name="comment">Acceso para ingresar análisis de calidad, humedad e impurezas.</field>
+            <field name="comment">Acceso para muestreo y registro de análisis físico-químicos.</field>
         </record>
 
-        <!-- Grupo: Administrador / Gerente -->
+        <!-- Grupo: Gerente de Recepción -->
         <record id="group_recepcion_manager" model="res.groups">
             <field name="name">Administrador / Gerente</field>
-            <field name="category_id" ref="module_category_recepcion_digital"/>
-            <field name="implied_ids" eval="[(4, ref('group_recepcion_romana')), (4, ref('group_recepcion_laboratorio'))]"/>
-            <field name="comment">Acceso completo para validación, completado y liquidación de recepciones.</field>
+            <field name="implied_ids" eval="[(4, ref('recepcion_digital.group_recepcion_romana')), (4, ref('recepcion_digital.group_recepcion_laboratorio'))]"/>
+            <field name="comment">Acceso total, aprobaciones directas y configuración del módulo.</field>
         </record>
 
     </data>
