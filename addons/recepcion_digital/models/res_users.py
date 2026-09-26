@@ -5,11 +5,15 @@ class ResUsers(models.Model):
     _inherit = 'res.users'
 
     area_trabajo = fields.Selection(
-        related='employee_id.area_trabajo',
+        selection=[
+            ('romana', 'Romana / Báscula'),
+            ('laboratorio', 'Laboratorio de Calidad'),
+            ('supervision', 'Supervisión / Planta'),
+            ('administracion', 'Administración'),
+        ],
         string='Área de Trabajo',
-        readonly=True,
-        store=False,
-        help='Área de trabajo del colaborador enlazado desde la ficha de empleado.'
+        default='romana',
+        help='Área de trabajo del colaborador.'
     )
 
     def get_user_app_profile(self):
