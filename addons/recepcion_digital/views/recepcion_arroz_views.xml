@@ -50,11 +50,13 @@
                     </group>
                     <group>
                         <group string="Pesaje de Báscula (kg)">
+                            <field name="operador_id" readonly="state in ['completado', 'cancelado']"/>
                             <field name="peso_bruto" readonly="state in ['completado', 'cancelado']"/>
                             <field name="peso_tara" readonly="state in ['completado', 'cancelado']"/>
                             <field name="peso_neto" readonly="1"/>
                         </group>
                         <group string="Análisis de Laboratorio (%)">
+                            <field name="analista_id" readonly="state in ['completado', 'cancelado']"/>
                             <field name="porcentaje_humedad" readonly="state in ['completado', 'cancelado']"/>
                             <field name="porcentaje_impureza" readonly="state in ['completado', 'cancelado']"/>
                             <field name="porcentaje_grano_rojo" readonly="state in ['completado', 'cancelado']"/>
@@ -98,6 +100,8 @@
                 <field name="guia_sica"/>
                 <field name="vehiculo_placa"/>
                 <field name="variedad_arroz"/>
+                <field name="operador_id" optional="show"/>
+                <field name="analista_id" optional="show"/>
                 <field name="peso_bruto" sum="Total Peso Bruto"/>
                 <field name="peso_tara" sum="Total Peso Tara"/>
                 <field name="peso_neto" sum="Total Peso Neto"/>
@@ -120,6 +124,8 @@
                 <field name="guia_sica" string="Guía SICA"/>
                 <field name="vehiculo_placa" string="Placa"/>
                 <field name="chofer_cedula" string="Cédula Conductor"/>
+                <field name="operador_id" string="Operador de Romana"/>
+                <field name="analista_id" string="Analista de Laboratorio"/>
                 <field name="lot_id" string="Lote de Almacén"/>
                 <field name="purchase_id" string="Orden de Compra"/>
 
@@ -129,6 +135,8 @@
                 <separator/>
                 
                 <filter string="Productor" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                <filter string="Operador Romana" name="group_operador" context="{'group_by': 'operador_id'}"/>
+                <filter string="Analista Laboratorio" name="group_analista" context="{'group_by': 'analista_id'}"/>
                 <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
                 <filter string="Variedad" name="group_variedad" context="{'group_by': 'variedad_arroz'}"/>
                 <filter string="Fecha" name="group_date" context="{'group_by': 'date_recepcion:day'}"/>
