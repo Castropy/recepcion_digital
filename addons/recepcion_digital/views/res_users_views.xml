@@ -7,11 +7,12 @@
         <field name="inherit_id" ref="base.view_users_form"/>
         <field name="arch" type="xml">
             <xpath expr="//notebook/page[@name='access_rights']" position="inside">
-                <group string="Recepción Digital">
-                    <field name="group_ids"
+                <group string="Recepción Digital - Colaboradores">
+                    <field name="area_trabajo" readonly="0"/>
+                    <field name="groups_id"
                            widget="many2many_checkboxes"
-                           domain="[('name', 'like', 'Recepción Digital')]"
-                           nolabel="1"/>
+                           domain="[('category_id', '=', ref('recepcion_digital.module_category_recepcion_digital'))]"
+                           string="Roles en Recepción Digital"/>
                 </group>
             </xpath>
         </field>
