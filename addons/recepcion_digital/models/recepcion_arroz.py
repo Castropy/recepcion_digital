@@ -54,6 +54,15 @@ class RecepcionArroz(models.Model):
         help='Usuario que registró el pesaje del vehículo.'
     )
 
+    # Alias compatible con la vista XML (recepcion_arroz_views.xml)
+    operador_id = fields.Many2one(
+        related='usuario_romana_id',
+        string='Operador de Báscula',
+        store=True,
+        readonly=False,
+        help='Alias relacional para operador de báscula en la vista.'
+    )
+
     usuario_laboratorio_id = fields.Many2one(
         comodel_name='res.users',
         string='Analista de Laboratorio',
