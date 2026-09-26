@@ -145,6 +145,20 @@ class RecepcionArroz(models.Model):
         help='Diferencia calculada entre el Peso Bruto y la Tara.'
     )
 
+    # --- ANÁLISIS DE LABORATORIO Y LIQUIDACIÓN ---
+    porcentaje_humedad = fields.Float(string='% Humedad', digits=(5, 2))
+    porcentaje_impureza = fields.Float(string='% Impureza', digits=(5, 2))
+    porcentaje_grano_rojo = fields.Float(string='% Grano Rojo', digits=(5, 2))
+
+    descuento_humedad_kg = fields.Float(string='Descuento Humedad (kg)', compute='_compute_liquidacion', store=True)
+    descuento_impureza_kg = fields.Float(string='Descuento Impureza (kg)', compute='_compute_liquidacion', store=True)
+    peso_acondicionado = fields.Float(string='Peso Acondicionado (kg)', compute='_compute_liquidacion', store=True)
+
+    # --- INTEGRACIÓN CON INVENTARIO Y COMPRAS ---
+    picking_id = fields.Many2one('stock.picking', string='Entrada de Almacén', readonly=True)
+    purchase_id = fields.Many2one('purchase.order', string='Orden de Compra', readonly=True)
+    lot_id = fields.Many2one('stock.lot', string='Lote de Almacén', readonly=True)
+
     # --- MÉTODOS ORM (CREACIÓN Y GESTIÓN) ---
     @api.model_create_multi
     def create(self, vals_list):
@@ -165,7 +179,27 @@ class RecepcionArroz(models.Model):
             new_vals_list.append(vals_dict)
         return super(RecepcionArroz, self).create(new_vals_list)
 
-    # --- ACCIONES Y ORQUESTACIÓN DE ESTADOS ---
+    # --- ACCIONES Y SMART BUTTONS ---
+    def action_view_picking(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'stock.picking',
+            'res_id': self.picking_id.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
+
+    def action_view_purchase(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'purchase.order',
+            'res_id': self.purchase_id.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
+
     def action_completar(self):
         """
         Orquesta la finalización de la recepción.
@@ -173,7 +207,7 @@ class RecepcionArroz(models.Model):
         y genera automáticamente la Orden de Compra asociada.
         """
         for record in self:
-            peso_final = getattr(record, 'peso_acondicionado', False) or record.peso_neto
+            peso_final = record.peso_acondicionado or record.peso_neto
             if peso_final <= 0:
                 raise UserError('No se puede completar una recepción con peso menor o igual a 0 kg.')
 
@@ -226,6 +260,22 @@ class RecepcionArroz(models.Model):
                 record.peso_neto = record.peso_bruto - record.peso_tara
             else:
                 record.peso_neto = 0.0
+
+    @api.depends('peso_neto', 'porcentaje_humedad', 'porcentaje_impureza')
+    def _compute_liquidacion(self):
+        """
+        Calcula las deducciones de humedad e impurezas sobre el peso neto.
+        """
+        for record in self:
+            exc_humedad = max(0.0, record.porcentaje_humedad - 12.0)
+            exc_impureza = max(0.0, record.porcentaje_impureza - 2.0)
+
+            desc_h = record.peso_neto * (exc_humedad / 100.0)
+            desc_i = record.peso_neto * (exc_impureza / 100.0)
+
+            record.descuento_humedad_kg = desc_h
+            record.descuento_impureza_kg = desc_i
+            record.peso_acondicionado = max(0.0, record.peso_neto - desc_h - desc_i)
 
     # --- RESTRICCIONES DE INTEGRIDAD BASE ---
     @api.constrains('peso_bruto', 'peso_tara')
