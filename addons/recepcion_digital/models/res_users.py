@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import models, fields, api
+from odoo import models, fields
 
 class ResUsers(models.Model):
     _inherit = 'res.users'
@@ -8,8 +8,8 @@ class ResUsers(models.Model):
         related='employee_id.area_trabajo',
         string='Área de Trabajo',
         readonly=True,
-        store=True,
-        help='Área de trabajo del colaborador enlazado.'
+        store=False,
+        help='Área de trabajo del colaborador enlazado desde la ficha de empleado.'
     )
 
     def get_user_app_profile(self):
