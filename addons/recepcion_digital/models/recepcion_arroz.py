@@ -46,6 +46,20 @@ class RecepcionArroz(models.Model):
         help='Fecha y hora en que el vehículo ingresa a la planta.'
     )
 
+    # --- AUDITORÍA DE COLABORADORES Y OPERADORES ---
+    usuario_romana_id = fields.Many2one(
+        comodel_name='res.users',
+        string='Operador de Romana',
+        default=lambda self: self.env.user,
+        help='Usuario que registró el pesaje del vehículo.'
+    )
+
+    usuario_laboratorio_id = fields.Many2one(
+        comodel_name='res.users',
+        string='Analista de Laboratorio',
+        help='Usuario que ingresó los datos de análisis de calidad.'
+    )
+
     # --- DATOS DE ORIGEN Y TRAZABILIDAD ---
     partner_id = fields.Many2one(
         comodel_name='res.partner',
@@ -141,17 +155,14 @@ class RecepcionArroz(models.Model):
         y genera automáticamente la Orden de Compra asociada.
         """
         for record in self:
-            # Obtener peso a validar (peso_acondicionado si existe por herencia, o peso_neto)
             peso_final = getattr(record, 'peso_acondicionado', False) or record.peso_neto
             if peso_final <= 0:
                 raise UserError('No se puede completar una recepción con peso menor o igual a 0 kg.')
 
-            # 1. Delegación al submódulo de inventario (si está implementado)
             picking = False
             if hasattr(record, '_create_stock_picking_and_lot'):
                 picking = record._create_stock_picking_and_lot()
 
-            # 2. Delegación al submódulo de compras (utiliza el producto del movimiento de inventario)
             if picking and getattr(picking, 'move_ids', False):
                 product = picking.move_ids[0].product_id
                 if hasattr(record, '_create_purchase_order'):
