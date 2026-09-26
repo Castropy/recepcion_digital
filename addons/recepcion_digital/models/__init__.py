@@ -5,3 +5,5 @@ from . import recepcion_arroz
 from . import recepcion_arroz_lab
 from . import recepcion_arroz_stock
 from . import recepcion_arroz_purchase
+from . import hr_employee
+from . import res_users
