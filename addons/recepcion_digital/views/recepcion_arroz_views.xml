@@ -82,6 +82,22 @@
                             <field name="lot_id" readonly="1"/>
                         </group>
                     </group>
+
+                    <!-- Cuaderno / Pestanas de Auditoria -->
+                    <notebook>
+                        <page string="Historial de Auditoría" name="audit_logs">
+                            <field name="log_ids" readonly="1">
+                                <list string="Modificaciones Registradas">
+                                    <field name="create_date" string="Fecha y Hora"/>
+                                    <field name="user_id" string="Usuario"/>
+                                    <field name="campo_modificado" string="Campo Alterado"/>
+                                    <field name="valor_anterior" string="Valor Previo"/>
+                                    <field name="valor_nuevo" string="Valor Nuevo"/>
+                                    <field name="motivo" string="Motivo"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
                 </sheet>
                 <chatter/>
             </form>
