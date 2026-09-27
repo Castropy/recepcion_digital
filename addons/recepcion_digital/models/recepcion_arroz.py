@@ -54,7 +54,6 @@ class RecepcionArroz(models.Model):
         help='Usuario que registró el pesaje del vehículo.'
     )
 
-    # Alias compatible con la vista XML
     operador_id = fields.Many2one(
         related='usuario_romana_id',
         string='Operador de Báscula',
@@ -69,7 +68,6 @@ class RecepcionArroz(models.Model):
         help='Usuario que ingresó los datos de análisis de calidad.'
     )
 
-    # Alias compatible con la vista XML
     analista_id = fields.Many2one(
         related='usuario_laboratorio_id',
         string='Analista de Laboratorio',
@@ -159,7 +157,15 @@ class RecepcionArroz(models.Model):
     purchase_id = fields.Many2one('purchase.order', string='Orden de Compra', readonly=True)
     lot_id = fields.Many2one('stock.lot', string='Lote de Almacén', readonly=True)
 
-    # --- MÉTODOS ORM (CREACIÓN Y GESTIÓN) ---
+    # --- AUDITORÍA DE CAMBIOS ---
+    log_ids = fields.One2many(
+        comodel_name='recepcion.arroz.log',
+        inverse_name='recepcion_id',
+        string='Historial de Modificaciones',
+        help='Muestra los registros de auditoria sobre los cambios de datos en la recepcion.'
+    )
+
+    # --- MÉTODOS ORM (CREACIÓN, EDICIÓN Y GESTIÓN) ---
     @api.model_create_multi
     def create(self, vals_list):
         """
@@ -178,6 +184,41 @@ class RecepcionArroz(models.Model):
                 vals_dict['partner_id'] = partner.id
             new_vals_list.append(vals_dict)
         return super(RecepcionArroz, self).create(new_vals_list)
+
+    def write(self, vals):
+        """
+        Sobrescribe el método write para interceptar modificaciones en campos críticos
+        y generar logs de auditoría de forma automática.
+        """
+        campos_auditables = {
+            'peso_bruto': 'Peso Bruto',
+            'peso_tara': 'Peso Tara',
+            'porcentaje_humedad': 'Porcentaje Humedad',
+            'porcentaje_impureza': 'Porcentaje Impureza',
+            'porcentaje_grano_rojo': 'Porcentaje Grano Rojo',
+            'partner_id': 'Productor / Proveedor',
+            'guia_sica': 'Guía SICA',
+            'vehiculo_placa': 'Placa Vehículo'
+        }
+
+        for record in self:
+            logs_a_crear = []
+            for campo_tecnico, etiqueta in campos_auditables.items():
+                if campo_tecnico in vals:
+                    valor_previo = str(getattr(record, campo_tecnico) or '')
+                    valor_nuevo = str(vals[campo_tecnico] or '')
+                    if valor_previo != valor_nuevo:
+                        logs_a_crear.append({
+                            'recepcion_id': record.id,
+                            'campo_modificado': etiqueta,
+                            'valor_anterior': valor_previo,
+                            'valor_nuevo': valor_nuevo,
+                            'motivo': vals.get('motivo_modificacion', 'Modificación registrada desde la app o interfaz Odoo')
+                        })
+            if logs_a_crear:
+                self.env['recepcion.arroz.log'].create(logs_a_crear)
+
+        return super(RecepcionArroz, self).write(vals)
 
     # --- ACCIONES Y SMART BUTTONS ---
     def action_view_picking(self):
