@@ -12,25 +12,46 @@ class RecepcionController(http.Controller):
     def api_login(self, **kwargs):
         """
         Endpoint de autenticacion para usuarios de la aplicacion movil.
-        Recibe la cedula (login) y contrasena.
+        Soporta autenticacion por Cedula de Identidad (hr.employee) o Correo (res.users).
         """
-        data = request.dispatcher.jsonrequest
-        login = data.get('login')
-        password = data.get('password')
+        # Extraer parametros recibidos via JSON-RPC
+        data = request.dispatcher.jsonrequest or {}
+        params = data.get('params', data) if isinstance(data, dict) else {}
 
-        if not login or not password:
+        login_input = params.get('login') or kwargs.get('login')
+        password = params.get('password') or kwargs.get('password')
+        db = params.get('db') or request.db or (http.db_monitored()[0] if http.db_monitored() else None)
+
+        if not login_input or not password:
             return {'status': 'error', 'message': 'Credenciales incompletas.'}
 
-        db = request.db or http.db_monitored()[0]
+        login_usuario = login_input.strip()
+
         try:
-            uid = request.session.authenticate(db, login, password)
+            # 1. Intentar buscar si el login introducido corresponde a la Cedula (identification_id) de un empleado
+            empleado = request.env['hr.employee'].sudo().search([
+                ('identification_id', '=', login_usuario)
+            ], limit=1)
+
+            if empleado and empleado.user_id:
+                login_usuario = empleado.user_id.login
+
+            # 2. Autenticar la sesion contra Odoo
+            uid = request.session.authenticate(db, login_usuario, password)
             if uid:
                 user = request.env['res.users'].browse(uid)
+                
+                # Obtener el rol / area de trabajo asignada al usuario
+                role = 'romana'
+                if hasattr(user, 'area_trabajo') and user.area_trabajo:
+                    role = user.area_trabajo
+
                 return {
                     'status': 'success',
                     'uid': uid,
                     'name': user.name,
                     'login': user.login,
+                    'role': role,
                     'session_id': request.session.sid,
                 }
         except Exception as error:
@@ -44,10 +65,12 @@ class RecepcionController(http.Controller):
         Endpoint de sincronizacion para procesar o actualizar registros
         de recepcion enviados desde la cola offline de React Native.
         """
-        data = request.dispatcher.jsonrequest
-        local_id = data.get('local_id')
-        odoo_id = data.get('id')
-        valores = data.get('valores', {})
+        data = request.dispatcher.jsonrequest or {}
+        params = data.get('params', data) if isinstance(data, dict) else {}
+
+        local_id = params.get('local_id')
+        odoo_id = params.get('id')
+        valores = params.get('valores', {})
 
         recepcion_obj = request.env['recepcion.arroz']
 
@@ -103,7 +126,7 @@ class RecepcionController(http.Controller):
 
         return {
             'success': True,
-            'lot_id':  lot.id,
+            'lot_id':   lot.id,
             'lot_name': lot.name,
             'estado_calidad': lot.estado_calidad,
             'peso_neto': lot.peso_neto,
