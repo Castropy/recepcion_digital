@@ -17,13 +17,13 @@ class RecepcionController(http.Controller):
         Endpoint de autenticación para usuarios de la aplicación móvil.
         Soporta inicio de sesión mediante Cédula de Identidad (hr.employee) o Correo/Login (res.users).
         """
-        # Desempaquetado dinámico y seguro de parámetros JSON-RPC
+        # Desempaquetado dinámico de parámetros JSON-RPC
         data = request.dispatcher.jsonrequest or {}
         params = data.get('params', data) if isinstance(data, dict) else {}
 
         login_input = params.get('login') or kwargs.get('login')
         password = params.get('password') or kwargs.get('password')
-        db = params.get('db') or request.db or (http.db_monitored()[0] if http.db_monitored() else None)
+        db_name = params.get('db') or request.db or (http.db_monitored()[0] if http.db_monitored() else None)
 
         if not login_input or not password:
             return {'status': 'error', 'message': 'Credenciales incompletas.'}
@@ -31,11 +31,7 @@ class RecepcionController(http.Controller):
         login_usuario = str(login_input).strip()
 
         try:
-            # Asignar base de datos a la sesión activa si se proporcionó
-            if db:
-                request.session.db = db
-
-            # 1. Búsqueda inteligente: Verificar si el valor ingresado corresponde a una cédula de empleado
+            # 1. Búsqueda por Cédula en Empleados (hr.employee)
             if hasattr(request.env, 'hr.employee'):
                 empleado = request.env['hr.employee'].sudo().search([
                     ('identification_id', '=', login_usuario)
@@ -44,22 +40,13 @@ class RecepcionController(http.Controller):
                 if empleado and empleado.user_id:
                     login_usuario = empleado.user_id.login
 
-            # 2. Autenticación con manejo seguro de firmas entre versiones de Odoo
-            uid = None
-            try:
-                # Firma Odoo con DB explícita
-                uid = request.session.authenticate(request.session.db or db, login_usuario, password)
-            except TypeError:
-                try:
-                    # Firma Odoo con 2 argumentos posicionales (login, password)
-                    uid = request.session.authenticate(login_usuario, password)
-                except Exception as auth_err:
-                    _logger.warning("Fallo secundario al autenticar usuario %s: %s", login_usuario, auth_err)
+            # 2. Autenticación oficial e inequívoca de Odoo
+            uid = request.session.authenticate(db_name, login_usuario, password)
 
             if uid:
                 user = request.env['res.users'].browse(uid)
                 
-                # Mapear área de trabajo asignada o fallback según grupo/rol
+                # Mapear área de trabajo asignada o fallback
                 role = getattr(user, 'area_trabajo', None) or 'romana'
 
                 _logger.info("Usuario %s (UID: %s) autenticado exitosamente con rol: %s", user.login, uid, role)
@@ -72,7 +59,6 @@ class RecepcionController(http.Controller):
                     'role': role,
                     'session_id': request.session.sid,
                 }
-
         except Exception as error:
             _logger.error("Error durante el proceso de autenticación: %s", str(error))
             return {'status': 'error', 'message': f"Error de autenticación: {str(error)}"}
