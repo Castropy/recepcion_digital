@@ -1,20 +1,23 @@
 # -*- coding: utf-8 -*-
+import logging
 from odoo import http
 from odoo.http import request
 
+_logger = logging.getLogger(__name__)
+
 class RecepcionController(http.Controller):
     """
-    Controlador API REST para la integracion con la aplicacion movil React Native.
-    Provee endpoints para autenticacion, sincronizacion por etapas y catalogos.
+    Controlador API REST/JSON-RPC para la integración con la aplicación móvil Recepción Digital (React Native).
+    Provee endpoints escalables para autenticación, sincronización por etapas y acceso a catálogos.
     """
 
     @http.route('/api/recepcion/login', type='json', auth='none', methods=['POST'], csrf=False)
     def api_login(self, **kwargs):
         """
-        Endpoint de autenticacion para usuarios de la aplicacion movil.
-        Soporta autenticacion por Cedula de Identidad (hr.employee) o Correo (res.users).
+        Endpoint de autenticación para usuarios de la aplicación móvil.
+        Soporta inicio de sesión mediante Cédula de Identidad (hr.employee) o Correo/Login (res.users).
         """
-        # Extraer parametros recibidos via JSON-RPC
+        # Desempaquetado dinámico y seguro de parámetros JSON-RPC
         data = request.dispatcher.jsonrequest or {}
         params = data.get('params', data) if isinstance(data, dict) else {}
 
@@ -25,26 +28,41 @@ class RecepcionController(http.Controller):
         if not login_input or not password:
             return {'status': 'error', 'message': 'Credenciales incompletas.'}
 
-        login_usuario = login_input.strip()
+        login_usuario = str(login_input).strip()
 
         try:
-            # 1. Intentar buscar si el login introducido corresponde a la Cedula (identification_id) de un empleado
-            empleado = request.env['hr.employee'].sudo().search([
-                ('identification_id', '=', login_usuario)
-            ], limit=1)
+            # Asignar base de datos a la sesión activa si se proporcionó
+            if db:
+                request.session.db = db
 
-            if empleado and empleado.user_id:
-                login_usuario = empleado.user_id.login
+            # 1. Búsqueda inteligente: Verificar si el valor ingresado corresponde a una cédula de empleado
+            if hasattr(request.env, 'hr.employee'):
+                empleado = request.env['hr.employee'].sudo().search([
+                    ('identification_id', '=', login_usuario)
+                ], limit=1)
 
-            # 2. Autenticar la sesion contra Odoo
-            uid = request.session.authenticate(db, login_usuario, password)
+                if empleado and empleado.user_id:
+                    login_usuario = empleado.user_id.login
+
+            # 2. Autenticación con manejo seguro de firmas entre versiones de Odoo
+            uid = None
+            try:
+                # Firma Odoo con DB explícita
+                uid = request.session.authenticate(request.session.db or db, login_usuario, password)
+            except TypeError:
+                try:
+                    # Firma Odoo con 2 argumentos posicionales (login, password)
+                    uid = request.session.authenticate(login_usuario, password)
+                except Exception as auth_err:
+                    _logger.warning("Fallo secundario al autenticar usuario %s: %s", login_usuario, auth_err)
+
             if uid:
                 user = request.env['res.users'].browse(uid)
                 
-                # Obtener el rol / area de trabajo asignada al usuario
-                role = 'romana'
-                if hasattr(user, 'area_trabajo') and user.area_trabajo:
-                    role = user.area_trabajo
+                # Mapear área de trabajo asignada o fallback según grupo/rol
+                role = getattr(user, 'area_trabajo', None) or 'romana'
+
+                _logger.info("Usuario %s (UID: %s) autenticado exitosamente con rol: %s", user.login, uid, role)
 
                 return {
                     'status': 'success',
@@ -54,16 +72,18 @@ class RecepcionController(http.Controller):
                     'role': role,
                     'session_id': request.session.sid,
                 }
-        except Exception as error:
-            return {'status': 'error', 'message': str(error)}
 
-        return {'status': 'error', 'message': 'Credenciales invalidas.'}
+        except Exception as error:
+            _logger.error("Error durante el proceso de autenticación: %s", str(error))
+            return {'status': 'error', 'message': f"Error de autenticación: {str(error)}"}
+
+        return {'status': 'error', 'message': 'Credenciales inválidas.'}
 
     @http.route('/api/recepcion/sincronizar', type='json', auth='user', methods=['POST'], csrf=False)
     def api_sincronizar(self, **kwargs):
         """
-        Endpoint de sincronizacion para procesar o actualizar registros
-        de recepcion enviados desde la cola offline de React Native.
+        Endpoint de sincronización para procesar o actualizar registros
+        de recepción enviados desde la cola offline de React Native.
         """
         data = request.dispatcher.jsonrequest or {}
         params = data.get('params', data) if isinstance(data, dict) else {}
@@ -97,6 +117,7 @@ class RecepcionController(http.Controller):
             }
 
         except Exception as error:
+            _logger.error("Error al sincronizar lote local_id %s: %s", local_id, str(error))
             return {
                 'status': 'error',
                 'local_id': local_id,
@@ -106,36 +127,37 @@ class RecepcionController(http.Controller):
     @http.route('/api/recepcion/crear', type='jsonrpc', auth='user', methods=['POST'], csrf=False)
     def crear_recepcion(self, **kwargs):
         """
-        Endpoint legacy para creacion directa de lotes de inventario.
+        Endpoint para creación directa de lotes de inventario.
         """
-        data = request.jsonrequest
-        
+        data = request.dispatcher.jsonrequest or {}
+        params = data.get('params', data) if isinstance(data, dict) else {}
+
         lot = request.env['stock.lot'].sudo().create({
-            'name':          data.get('lote_nombre'),
-            'product_id':    data.get('product_id'),
+            'name':          params.get('lote_nombre'),
+            'product_id':    params.get('product_id'),
             'company_id':    request.env.company.id,
-            'variedad':      data.get('variedad'),
-            'peso_bruto':    data.get('peso_bruto'),
-            'tara_camion':   data.get('tara_camion'),
-            'humedad':       data.get('humedad'),
-            'impurezas':     data.get('impurezas'),
-            'placa_camion':  data.get('placa'),
-            'nombre_chofer': data.get('chofer'),
-            'silo_asignado': data.get('silo'),
+            'variedad':      params.get('variedad'),
+            'peso_bruto':    params.get('peso_bruto'),
+            'tara_camion':   params.get('tara_camion'),
+            'humedad':       params.get('humedad'),
+            'impurezas':     params.get('impurezas'),
+            'placa_camion':  params.get('placa'),
+            'nombre_chofer': params.get('chofer'),
+            'silo_asignado': params.get('silo'),
         })
 
         return {
             'success': True,
             'lot_id':   lot.id,
             'lot_name': lot.name,
-            'estado_calidad': lot.estado_calidad,
-            'peso_neto': lot.peso_neto,
+            'estado_calidad': getattr(lot, 'estado_calidad', 'borrador'),
+            'peso_neto': getattr(lot, 'peso_neto', 0.0),
         }
 
     @http.route('/api/recepcion/proveedores', type='jsonrpc', auth='user', methods=['POST'], csrf=False)
     def listar_proveedores(self, **kwargs):
         """
-        Endpoint para listar el catalogo de proveedores activos.
+        Endpoint para listar el catálogo de proveedores activos.
         """
         proveedores = request.env['res.partner'].sudo().search([
             ('supplier_rank', '>', 0)
