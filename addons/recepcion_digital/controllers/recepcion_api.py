@@ -203,6 +203,41 @@ class RecepcionController(http.Controller):
             'session_id': request.session.sid,
         }
 
+    @staticmethod
+    def _resolver_partner_id(partner_val):
+        """
+        Resuelve y garantiza la existencia de res.partner usando .sudo()
+        para evitar violaciones de ACL cuando el operador móvil sincroniza.
+        """
+        if not partner_val:
+            return False
+
+        # Si viene como un entero o una cadena numérica
+        if isinstance(partner_val, int) or (isinstance(partner_val, str) and partner_val.isdigit()):
+            partner = request.env['res.partner'].sudo().browse(int(partner_val))
+            if partner.exists():
+                return partner.id
+
+        # Si viene como texto (Nombre del Productor / RIF)
+        partner_str = str(partner_val).strip()
+        partner_sudo = request.env['res.partner'].sudo()
+
+        partner = partner_sudo.search([
+            '|',
+            ('vat', '=', partner_str),
+            ('name', '=ilike', partner_str)
+        ], limit=1)
+
+        if not partner:
+            partner = partner_sudo.create({
+                'name': partner_str,
+                'supplier_rank': 1,
+                'company_type': 'person',
+                'comment': 'Contacto generado automáticamente desde la App Móvil Recepción Digital',
+            })
+
+        return partner.id
+
     @http.route(
         '/api/recepcion/sincronizar',
         type='json',
@@ -221,7 +256,11 @@ class RecepcionController(http.Controller):
 
         local_id = params.get('local_id')
         odoo_id = params.get('id')
-        valores = params.get('valores', {})
+        valores = dict(params.get('valores', {}))
+
+        # Resolver partner_id usando elevación de privilegios de forma segura
+        if 'partner_id' in valores:
+            valores['partner_id'] = self._resolver_partner_id(valores['partner_id'])
 
         recepcion_obj = request.env['recepcion.arroz']
 
