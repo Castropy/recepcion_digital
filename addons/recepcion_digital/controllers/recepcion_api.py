@@ -262,7 +262,9 @@ class RecepcionController(http.Controller):
         if 'partner_id' in valores:
             valores['partner_id'] = self._resolver_partner_id(valores['partner_id'])
 
-        recepcion_obj = request.env['recepcion.arroz']
+        # Usar .sudo() para garantizar la escritura y creación desde la API móvil
+        # independientemente de las ACLs del rol del usuario autenticado.
+        recepcion_obj = request.env['recepcion.arroz'].sudo()
 
         try:
             if odoo_id:
